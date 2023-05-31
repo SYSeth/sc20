@@ -1,0 +1,52 @@
+from web3 import Web3
+
+# Connect to a local Ethereum node (change the URL to your node's URL)
+w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+
+# Set the contract address and ABI
+contract_address = '0xContractAddress'
+contract_abi = [
+    {
+        "constant": False,
+        "inputs": [],
+        "name": "incrementCounter",
+        "outputs": [],
+        "payable": False,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "getCounter",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
+
+# Create a contract instance
+contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+
+# Interact with the contract
+counter_value = contract.functions.getCounter().call()
+print(f"Counter value: {counter_value}")
+
+transaction = contract.functions.incrementCounter().buildTransaction({
+    'from': '0xYourAddress',
+    'nonce': w3.eth.getTransactionCount('0xYourAddress'),
+    'gas': 2000000,
+    'gasPrice': w3.toWei('50', 'gwei')
+})
+
+signed_txn = w3.eth.account.signTransaction(transaction, private_key='0xYourPrivateKey')
+transaction_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+transaction_receipt = w3.eth.waitForTransactionReceipt(transaction_hash)
+
+print(f"Transaction receipt: {transaction_receipt}")
